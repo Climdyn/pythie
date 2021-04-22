@@ -27,7 +27,7 @@ Indices and tables
 About
 =====
 
-Please consult the Pythie `code repository`_ for updates.
+Please consult the `Pythie code repository`_ for updates.
 
 Pythie is licensed under the `BSD-3-Clause`_ license:
 
@@ -61,3 +61,4 @@ Pythie is licensed under the `BSD-3-Clause`_ license:
 
 
 .. _BSD-3-Clause: https://opensource.org/licenses/BSD-3-Clause
+.. _Pythie code repository: https://github.com/Climdyn/pythie

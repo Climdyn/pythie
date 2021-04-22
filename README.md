@@ -105,6 +105,16 @@ Pythie needs mainly:
 
 Check the yaml file [environment.yml](./environment.yml) for the full list of dependencies.
 
+For various usages, Pythie can optionally need:
+
+   * [IPython](https://ipython.org/) 
+   * [Jupyter](https://jupyter.org/) for notebooks
+   * [matplotlib](https://matplotlib.org/) for plotting
+   * [iris](https://scitools.org.uk/) to manipulate [NetCDF](https://en.wikipedia.org/wiki/NetCDF) files
+   * [pandas](https://pandas.pydata.org/) to manipulate CSV and dataframes
+   * [ffmpeg](https://ffmpeg.org/) to make movies and gif ;-)
+
+
 Forthcoming developments
 ------------------------
 
@@ -125,3 +135,20 @@ Please consider the following guidelines before submitting:
 * Before submitting a pull request, double check that the branch to be merged contains only changes you wish to add to the master branch. This will save time in reviewing the code.
 * Please document the new functionalities in the documentation. Code addition without documentation addition will not be accepted. The documentation is done with [sphinx](https://www.sphinx-doc.org/en/master/) and follows the Numpy conventions. Please take a look to the actual code to get an idea about how to document the code.
 * The team presently maintaining qgs is not working full-time on it, so please be patient as the review of the submission may take some time.
+
+See also
+--------
+
+Articles and newsletters related to Pythie:
+
+* **Demaeyer, J., Vannitsem, S. & B. Van Schaeybroeck**, 2021: Statistical post-processing of ensemble forecasts at the Belgian met service, ECMWF Newsletter **No. 166**, 21–25. [[link](https://www.ecmwf.int/en/newsletter/166/meteorology/statistical-post-processing-ensemble-forecasts-belgian-met-service)]
+* **Vannitsem, S. & J. Demaeyer**, 2020: Statistical postprocessing of ECMWF forecasts at the Belgian met service, ECMWF Newsletter **No. 164**, 4–5. [[link](https://www.ecmwf.int/en/newsletter/164/news/statistical-post-processing-ecmwf-forecasts-belgian-met-service)]
+
+
+Acknowledgements
+----------------
+
+The Pythie developers would like to thank the following people:
+
+* Bert Van Schaeybroeck from RMIB for his help in debugging parts of the code.
+* Susanne Theis from DWD for communicating us the existence of the [CDC portal](https://cdc.dwd.de/portal/).
