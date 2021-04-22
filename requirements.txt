@@ -1,5 +1,5 @@
-numpy
 python>=3.7
+numpy>=1.2
 scipy
 ipython
 jupyter
