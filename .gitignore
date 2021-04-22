@@ -1,0 +1,6 @@
+__pycache__
+.ipynb_checkpoints
+data
+documentation/build/
+documentation/source/files/examples/*_files/
+documentation/source/files/examples/*.rst
