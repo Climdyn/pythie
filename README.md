@@ -2,6 +2,8 @@
 Pythie
 ======
 
+[![Documentation Status](https://readthedocs.org/projects/pythie/badge/?version=latest)](https://pythie.readthedocs.io/en/latest/?badge=latest)
+
 General Information
 -------------------
 
@@ -54,6 +56,8 @@ To build the documentation, please run (with the conda environment activated):
 
 You may need to install [make](https://www.gnu.org/software/make/) if it is not already present on your system.
 Once built, the documentation is available [here](./documentation/build/html/index.html).
+
+The documentation is also available online on read the docs: [https://pythie.readthedocs.io](https://pythie.readthedocs.io)
 
 You may also want to run the tests provided inside the documentation:
 
