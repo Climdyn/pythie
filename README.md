@@ -11,7 +11,7 @@ Presently, it contains the modules:
 * MBM: a module to make member-by-member ensemble forecasts postprocessing based on past (re)forecasts. It implements the methods described in:
     
     * Bert Van Schaeybroeck and Stéphane Vannitsem. Ensemble post-processing using member-by-member approaches: theoretical aspects. *Quarterly Journal
-      of the Royal Meteorological Society*, **141** (688):807–818, 2015. [ [link] ](https://doi.org/10.1002/qj.2397).
+      of the Royal Meteorological Society*, **141** (688):807–818, 2015. [[link](https://doi.org/10.1002/qj.2397)].
       
 * To be continued...
 
@@ -59,7 +59,7 @@ You may also want to run the tests provided inside the documentation:
 
     make doctest
 
-In case of a test failure, please report it on the issue page of the Pythie GitHub repository.
+In case of a test failure, please report it on the [issue page](https://github.com/Climdyn/pythie/issues) of the [Pythie GitHub repository](https://github.com/Climdyn/pythie).
 
 > **__Warning:__** You need the extra packages to be installed in order to be able to build the documentation.
 
@@ -70,7 +70,7 @@ Examples are provided in the [References](./documentation/build/html/files/refer
 and through the use of Jupyter notebooks.
 The latter can be found in the [notebooks folder](./notebooks).
 
-These notebooks needs the download of a dataset stored on [Zenodo](https://zenodo.org/record/4707154#.YIAvXBI69Go).
+These notebooks needs the download of a dataset stored on [Zenodo](https://zenodo.org) [[link to the data](https://zenodo.org/record/4707154#.YIAvXBI69Go)].
 This dataset can be downloaded by running the following script:
 
     bash -i download_sample_data.sh
@@ -113,7 +113,7 @@ Contributing to Pythie
 
 Writing better interfaces to other libraries is a priority so if you think you can help us, please contact the main authors.
 
-In addition, if you have made changes that you think will be useful to others, please feel free to suggest these as a pull request on the Pythie GitHub repository.
+In addition, if you have made changes that you think will be useful to others, please feel free to suggest these as a pull request on the [Pythie GitHub repository](https://github.com/Climdyn/pythie).
 
 A review of your pull request will follow with possibly suggestions of changes before merging it in the master branch.
 Please consider the following guidelines before submitting:
