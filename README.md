@@ -104,7 +104,7 @@ Check the yaml file [environment.yml](./environment.yml) for the full list of de
 Forthcoming developments
 ------------------------
 
-   * Better interfacing with libraries such as: [pandas](https://pandas.pydata.org/), [iris](https://scitools.org.uk/), [xarray](ttp://xarray.pydata.org/en/stable/index.html).
+   * Better interfacing with libraries such as: [pandas](https://pandas.pydata.org/), [iris](https://scitools.org.uk/), [xarray](http://xarray.pydata.org/en/stable/index.html).
    * Release of a Python package for the version v0.1
    * A more involved test framework
      

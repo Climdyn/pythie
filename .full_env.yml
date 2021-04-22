@@ -1,0 +1,22 @@
+name: pythie
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - numpy
+  - python=3.7
+  - scipy
+  - ipython
+  - jupyter
+  - matplotlib
+  - iris
+  - cartopy
+  - ffmpeg
+  - zip
+  - pandas
+  - sphinx
+  - sphinx_rtd_theme
+  - pip
+  - pip:
+      - sphinxcontrib-bibtex<2.0.0
+      - zenodo-get

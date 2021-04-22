@@ -60,7 +60,7 @@ You may also want to run the tests provided inside the documentation: ::
 
     make doctest
 
-In case of a test failure, please report it on the issue page of the Pythie GitHub repository.
+In case of a test failure, please report it on the `issues page`_ of the `Pythie GitHub repository`_.
 
 .. warning::
 
@@ -72,7 +72,7 @@ Examples
 Examples are provided in the :ref:`files/references:References` pages and through the use of Jupyter notebooks.
 The latter can be found in the `notebooks folder <../../../../notebooks>`_.
 
-These notebooks needs the download of a dataset stored on `Zenodo <https://zenodo.org/record/4707154#.YIAvXBI69Go>`_ .
+These notebooks needs the download of a dataset stored on `Zenodo <https://zenodo.org>`_ [`link to the data <https://zenodo.org/record/4707154#.YIAvXBI69Go>`_ ].
 This dataset can be downloaded by running the following script: ::
 
     bash -i download_sample_data.sh
@@ -114,7 +114,7 @@ Contributing to Pythie
 
 Writing better interfaces to other libraries is a priority so if you think you can help us, please contact the main authors.
 
-In addition, if you have made changes that you think will be useful to others, please feel free to suggest these as a pull request on the Pythie GitHub repository.
+In addition, if you have made changes that you think will be useful to others, please feel free to suggest these as a pull request on the `Pythie GitHub repository`_.
 
 A review of your pull request will follow with possibly suggestions of changes before merging it in the master branch.
 Please consider the following guidelines before submitting:
@@ -145,3 +145,5 @@ References
 .. _make: https://www.gnu.org/software/make/
 .. _sphinx: https://www.sphinx-doc.org/en/master/
 .. _unittest: https://docs.python.org/3/library/unittest.html
+.. _Pythie GitHub repository: https://github.com/Climdyn/pythie
+.. _issues page: https://github.com/Climdyn/pythie/issues
