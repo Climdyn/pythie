@@ -114,6 +114,7 @@ For various usages, Pythie can optionally need:
    * [pandas](https://pandas.pydata.org/) to manipulate CSV and dataframes
    * [ffmpeg](https://ffmpeg.org/) to make movies and gif ;-)
 
+Check the yaml file [extra_environment.yml](./extra_environment.yml) for the full list of extra dependencies.
 
 Forthcoming developments
 ------------------------
