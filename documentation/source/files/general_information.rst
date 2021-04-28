@@ -98,7 +98,7 @@ Pythie needs mainly:
 
 * Python >= 3.7
 * `Numpy`_ for numeric support
-* `Scipy`_ for the CPRS minization
+* `Scipy`_ for the CPRS minimization
 
 Check the yaml file `environment.yml <../../../../environment.yml>`_ for the full list of dependencies.
 

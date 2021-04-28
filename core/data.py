@@ -71,6 +71,9 @@
       (2, 3, 1, 1, 60)
 
       In the following, in such a case we will use the notation :math:`\\mathcal{D}_{p,n,v} (t) \\equiv \\mathcal{D}_{p,n,0,v} (t)`.
+    * Missing values in :class:`Data` objects can be marked as :data:`numpy.nan`. The various averages, summation and methods will automatically **ignore** the missing values.
+      As a consequence, it means that these averages and summations will include less terms. For example, if at one lead time, an ensemble member value is missing,
+      the ensemble mean is done on the rest of the ensemble at this precise lead time and obviously does not include this member.
 
     References
     ----------

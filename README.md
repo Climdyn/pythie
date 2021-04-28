@@ -101,7 +101,7 @@ Pythie needs mainly:
 
    * Python >= 3.7
    * [Numpy](https://numpy.org/) for numeric support
-   * [SciPy](https://www.scipy.org/scipylib/index.html)  for the CPRS minization
+   * [SciPy](https://www.scipy.org/scipylib/index.html)  for the CPRS minimization
 
 Check the yaml file [environment.yml](./environment.yml) for the full list of dependencies.
 
@@ -135,7 +135,7 @@ Please consider the following guidelines before submitting:
 
 * Before submitting a pull request, double check that the branch to be merged contains only changes you wish to add to the master branch. This will save time in reviewing the code.
 * Please document the new functionalities in the documentation. Code addition without documentation addition will not be accepted. The documentation is done with [sphinx](https://www.sphinx-doc.org/en/master/) and follows the Numpy conventions. Please take a look to the actual code to get an idea about how to document the code.
-* The team presently maintaining qgs is not working full-time on it, so please be patient as the review of the submission may take some time.
+* The team presently maintaining Pythie is not working full-time on it, so please be patient as the review of the submission may take some time.
 
 See also
 --------
