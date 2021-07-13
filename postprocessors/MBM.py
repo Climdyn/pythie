@@ -55,9 +55,9 @@ import numpy as np
 import warnings
 import datetime
 import multiprocessing
-import core.utils as utils
-from core.data import Data
-from core.postprocessor import PostProcessor
+from ..core.utils import map_times_to_int_array
+from ..core.data import Data
+from ..core.postprocessor import PostProcessor
 import scipy.optimize as optimize
 from scipy.interpolate import interp1d
 from itertools import product
@@ -190,13 +190,13 @@ class EnsembleMeanCorrection(PostProcessor):
         timedeltas = np.diff(timestamps)
         if isinstance(forecast_init_time, int):
             first_dt = timestamps[0].hour - forecast_init_time
-            ptime = np.concatenate(([first_dt], first_dt + utils.map_times_to_int_array(timedeltas.cumsum())))
+            ptime = np.concatenate(([first_dt], first_dt + map_times_to_int_array(timedeltas.cumsum())))
         elif isinstance(forecast_init_time, datetime.datetime):
             first_dt = timestamps[0] - forecast_init_time
-            ptime = np.concatenate(([first_dt], utils.map_times_to_int_array((first_dt + timedeltas).cumsum())))
+            ptime = np.concatenate(([first_dt], map_times_to_int_array((first_dt + timedeltas).cumsum())))
         else:
             first_dt = timestamps[0].hour
-            ptime = np.concatenate(([first_dt], first_dt + utils.map_times_to_int_array(timedeltas.cumsum())))
+            ptime = np.concatenate(([first_dt], first_dt + map_times_to_int_array(timedeltas.cumsum())))
         beta_parameters_time = np.empty((predictors.number_of_predictors, 1), dtype=object)
         alpha_parameters_time = np.empty((1, 1), dtype=object)
         alpha_parameters_time[0, 0] = ptime
@@ -617,7 +617,7 @@ class EnsembleMeanCorrection(PostProcessor):
 
                 parameters_list = list()
                 timedelta = np.diff(np.insert(combined_time, 0, predictors.timestamps[0, 0][0]))
-                ptime = utils.map_times_to_int_array(timedelta.cumsum())
+                ptime = map_times_to_int_array(timedelta.cumsum())
                 beta_parameters_time = np.empty((self.parameters_list[1].index_shape[0], 1), dtype=object)
                 parameters_time = np.empty((1, 1), dtype=object)
                 parameters_time[0, 0] = ptime
@@ -848,13 +848,13 @@ class BiasCorrection(EnsembleMeanCorrection):
         timedeltas = np.diff(timestamps)
         if isinstance(forecast_init_time, int):
             first_dt = timestamps[0].hour - forecast_init_time
-            ptime = np.concatenate(([first_dt], first_dt + utils.map_times_to_int_array(timedeltas.cumsum())))
+            ptime = np.concatenate(([first_dt], first_dt + map_times_to_int_array(timedeltas.cumsum())))
         elif isinstance(forecast_init_time, datetime.datetime):
             first_dt = timestamps[0] - forecast_init_time
-            ptime = np.concatenate(([first_dt], utils.map_times_to_int_array((first_dt + timedeltas).cumsum())))
+            ptime = np.concatenate(([first_dt], map_times_to_int_array((first_dt + timedeltas).cumsum())))
         else:
             first_dt = timestamps[0].hour
-            ptime = np.concatenate(([first_dt], first_dt + utils.map_times_to_int_array(timedeltas.cumsum())))
+            ptime = np.concatenate(([first_dt], first_dt + map_times_to_int_array(timedeltas.cumsum())))
         parameters_time = np.empty((1, 1), dtype=object)
         parameters_time[0, 0] = ptime
 
