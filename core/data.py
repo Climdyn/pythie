@@ -1670,6 +1670,7 @@ class Data(object):
                     self.data = np.concatenate((self.data, new_data), axis=concat_axis)
                 except:
                     warnings.warn('Problem to concatenate the new data with one already present in the Data object. Data not loaded', UserWarning)
+                    return
 
                 if load_axis == 1:
                     try:
