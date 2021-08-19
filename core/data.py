@@ -1868,7 +1868,7 @@ class Data(object):
         return new_timestamps
 
     def append_predictors(self, data):
-        """Append a predictors Data object to the current one (i.e. along the 0th axis).
+        """Append a predictors Data object to the current ones (i.e. along the 0th axis).
 
         Parameters
         ----------
@@ -1877,17 +1877,96 @@ class Data(object):
             If the initial Data object is empty, simply copy the `data` object.
         """
 
-        if isinstance(data, Data):
-            if self.data is not None:
-                self.data = np.concatenate((self.data, data.data))
-                if self.metadata is not None:
-                    self.metadata = np.concatenate((self.metadata, data.metadata))
-                if self.timestamps is not None:
-                    self.timestamps = np.concatenate((self.timestamps, data.timestamps))
-            else:
-                self.data = data.data.copy()
-                self.metadata = data.metadata.copy()
-                self.timestamps = data.timestamps.copy()
+        try:
+            if isinstance(data, Data):
+                if self.data is not None:
+                    self.data = np.concatenate((self.data, data.data))
+                    if self.metadata is not None:
+                        self.metadata = np.concatenate((self.metadata, data.metadata))
+                    if self.timestamps is not None:
+                        self.timestamps = np.concatenate((self.timestamps, data.timestamps))
+                else:
+                    self.data = data.data.copy()
+                    self.metadata = data.metadata.copy()
+                    self.timestamps = data.timestamps.copy()
+        except:
+            warnings.warn('Unable to append the provided predictors.', UserWarning)
+
+    def append_realizations(self, data):
+        """Append a realizations Data object to the current ones (i.e. along the 1st axis).
+
+        Parameters
+        ----------
+        data: Data
+            The data object of the realizations to append. Must be compatible/broadcastable.
+            If the initial Data object is empty, simply copy the `data` object.
+        """
+
+        try:
+            if isinstance(data, Data):
+                if self.data is not None:
+                    self.data = np.concatenate((self.data, data.data), axis=1)
+                    if self.metadata is not None:
+                        self.metadata = np.concatenate((self.metadata, data.metadata), axis=1)
+                    if self.timestamps is not None:
+                        self.timestamps = np.concatenate((self.timestamps, data.timestamps), axis=1)
+                else:
+                    self.data = data.data.copy()
+                    self.metadata = data.metadata.copy()
+                    self.timestamps = data.timestamps.copy()
+        except:
+            warnings.warn('Unable to append the provided realizations.', UserWarning)
+
+    def append_observations(self, data):
+        """Append a observations Data object to the current ones (i.e. along the 1st axis). Alias for
+        :meth:`.append_realization`.
+
+        Parameters
+        ----------
+        data: Data
+            The data object of the observations to append. Must be compatible/broadcastable.
+            If the initial Data object is empty, simply copy the `data` object.
+        """
+
+        try:
+            if isinstance(data, Data):
+                if self.data is not None:
+                    self.data = np.concatenate((self.data, data.data), axis=1)
+                    if self.metadata is not None:
+                        self.metadata = np.concatenate((self.metadata, data.metadata), axis=1)
+                    if self.timestamps is not None:
+                        self.timestamps = np.concatenate((self.timestamps, data.timestamps), axis=1)
+                else:
+                    self.data = data.data.copy()
+                    self.metadata = data.metadata.copy()
+                    self.timestamps = data.timestamps.copy()
+        except:
+            warnings.warn('Unable to append the provided observations.', UserWarning)
+
+    def append_members(self, data):
+        """Append a members Data object to the current ones (i.e. along the 2nd axis).
+
+        Parameters
+        ----------
+        data: Data
+            The data object of the members to append. Must be compatible/broadcastable.
+            If the initial Data object is empty, simply copy the `data` object.
+        """
+
+        try:
+            if isinstance(data, Data):
+                if self.data is not None:
+                    self.data = np.concatenate((self.data, data.data), axis=1)
+                    if self.metadata is not None:
+                        self.metadata = np.concatenate((self.metadata, data.metadata), axis=1)
+                    if self.timestamps is not None:
+                        self.timestamps = np.concatenate((self.timestamps, data.timestamps), axis=1)
+                else:
+                    self.data = data.data.copy()
+                    self.metadata = data.metadata.copy()
+                    self.timestamps = data.timestamps.copy()
+        except:
+            warnings.warn('Unable to append the provided members.', UserWarning)
 
     def append_variable(self, data):
         warnings.warn('Method not yet implemented.', UserWarning)
