@@ -1826,7 +1826,7 @@ class Data(object):
                     timestamps = None
                 else:
                     # if a valid timestamps array is provided just pass it
-                    if timestamps.shape == new_data.shape[:2] and timestamps.dtype is np.dtype(object):
+                    if timestamps.shape == new_data.shape[:2] and timestamps.dtype == np.dtype(object):
                         return timestamps
 
                     for t in timestamps:
