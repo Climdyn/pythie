@@ -55,9 +55,9 @@ import numpy as np
 import warnings
 import datetime
 import multiprocessing
-from ..core.utils import map_times_to_int_array
-from ..core.data import Data
-from ..core.postprocessor import PostProcessor
+from core.utils import map_times_to_int_array
+from core.data import Data
+from core.postprocessor import PostProcessor
 import scipy.optimize as optimize
 from scipy.interpolate import interp1d
 from itertools import product
