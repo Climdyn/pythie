@@ -19,7 +19,7 @@
     * The Data object :math:`\\mathcal{D}_{p,n,m,v} (t)` is assumed to contain all the predictors used to correct the
       variable needed, the first predictor being by convention the variable itself: :math:`\\mathcal{D}_{0,n,m,v} (t)`.
     * :math:`\\mu^{\\rm ens}_{p,n,v} (t)` is the :attr:`.Data.ensemble_mean` of the Data object :math:`\\mathcal{D}_{p,n,m,v} (t)`.
-    * :math:`\\tau_{v} (t)` is a multiplicative correction applied to each member of the first predictor of the the :attr:`Data.centered_ensemble` :math:`\\bar{\\mathcal{D}}^{\\rm ens}_{0,n,m,v} (t)`.
+    * :math:`\\tau_{v} (t)` is a multiplicative correction applied to each member of the first predictor of the :attr:`Data.centered_ensemble` :math:`\\bar{\\mathcal{D}}^{\\rm ens}_{0,n,m,v} (t)`.
     * :math:`\\mathcal{D}^C_{n,m,v} (t)` is the corrected Data object, with an ensemble member-by-member correction.
 
     Content
@@ -177,7 +177,7 @@ class EnsembleMeanCorrection(PostProcessor):
         beta = np.squeeze(beta).reshape(tuple(index_shape) + predictors.shape)
 
         alpha = observations.observational_mean.data
-        alpha -= np.mean(np.sum(beta * predictors.ensemble_mean.data, axis=0), axis=0)[np.newaxis, np.newaxis, ...]
+        alpha -= np.nanmean(np.sum(beta * predictors.ensemble_mean.data, axis=0), axis=0)[np.newaxis, np.newaxis, ...]
 
         if predictors.timestamps is not None:
             timestamps = predictors.timestamps[0, 0]
@@ -221,6 +221,7 @@ class EnsembleMeanCorrection(PostProcessor):
         return Data(res, metadata=predictors.metadata, timestamps=timestamps, dtype=predictors.dtype)
 
     def train(self, observations, predictors, forecast_init_time=None, **kwargs):
+
         """Method to train the postprocessor with an observation and predictors training set. Once trained, the postprocessor parameters
         are stored in the :attr:`~.EnsembleMeanCorrection.parameter_list`.
 
@@ -232,9 +233,11 @@ class EnsembleMeanCorrection(PostProcessor):
             A `Data` object containing the predictors training set. Must be broadcastable with the `observations`.
         forecast_init_time: int or ~datetime.datetime, optional
             The time at which the predictors generation begin (the (re)forecasts initial time). If None, assume that this time is zero (00Z).
-        """
+    """
 
-        alpha, beta = self._compute_em_coefficients(observations, predictors, forecast_init_time)
+        obs, pred = self._sanitize_data(observations, predictors)
+
+        alpha, beta = self._compute_em_coefficients(obs, pred, forecast_init_time)
 
         self.parameters_list.clear()
         self.parameters_list.append(alpha)
@@ -874,9 +877,11 @@ class BiasCorrection(EnsembleMeanCorrection):
             The time at which the predictors generation begin (the (re)forecasts initial time). If None, assume that this time is zero (00Z).
         """
 
-        alpha = self._compute_bias(observations, predictors, forecast_init_time=None)
+        obs, pred = self._sanitize_data(observations, predictors)
+
+        alpha = self._compute_bias(obs, pred, forecast_init_time=None)
         beta = alpha.full_like(1.)
-        for _ in range(predictors.number_of_predictors-1):
+        for _ in range(pred.number_of_predictors - 1):
             beta.append_predictors(alpha.zeros_like())
 
         self.parameters_list.clear()
@@ -1008,7 +1013,9 @@ class EnsembleSpreadScalingCorrection(EnsembleMeanCorrection):
             The time at which the predictors generation begin (the (re)forecasts initial time). If None, assume that this time is zero (00Z).
         """
 
-        alpha, beta, gamma_1 = self._compute_ss_coefficients(observations, predictors, forecast_init_time)
+        obs, pred = self._sanitize_data(observations, predictors)
+
+        alpha, beta, gamma_1 = self._compute_ss_coefficients(obs, pred, forecast_init_time)
 
         self.parameters_list.clear()
         self.parameters_list.append(alpha)
@@ -1316,11 +1323,13 @@ class EnsembleSpreadScalingAbsCRPSCorrection(EnsembleSpreadScalingCorrection):
             Dictionary of options to pass to the :func:`scipy.optimize.minimize` function.
         """
 
-        alpha, beta, gamma_1 = EnsembleSpreadScalingCorrection._compute_ss_coefficients(observations, predictors, forecast_init_time)
+        obs, pred = self._sanitize_data(observations, predictors)
+
+        alpha, beta, gamma_1 = EnsembleSpreadScalingCorrection._compute_ss_coefficients(obs, pred, forecast_init_time)
 
         self.parameters_list = [alpha, beta, gamma_1, alpha.zeros_like()]
 
-        self._minimize(observations, predictors, num_threads=num_threads, ntrial=ntrial, **kwargs)
+        self._minimize(obs, pred, num_threads=num_threads, ntrial=ntrial, **kwargs)
 
 
 class EnsembleSpreadScalingNgrCRPSCorrection(EnsembleSpreadScalingAbsCRPSCorrection):
@@ -1741,12 +1750,14 @@ class EnsembleAbsCRPSCorrection(EnsembleSpreadScalingCorrection):
             Dictionary of options to pass to the :func:`scipy.optimize.minimize` function.
         """
 
-        alpha, beta, gamma_1 = EnsembleSpreadScalingCorrection._compute_ss_coefficients(observations, predictors, forecast_init_time)
+        obs, pred = self._sanitize_data(observations, predictors)
+
+        alpha, beta, gamma_1 = EnsembleSpreadScalingCorrection._compute_ss_coefficients(obs, pred, forecast_init_time)
         gamma_2 = gamma_1.copy()
 
         self.parameters_list = [alpha, beta, gamma_1, gamma_2]
 
-        self._minimize(observations, predictors, num_threads=num_threads, ntrial=ntrial, **kwargs)
+        self._minimize(obs, pred, num_threads=num_threads, ntrial=ntrial, **kwargs)
 
 
 class EnsembleNgrCRPSCorrection(EnsembleAbsCRPSCorrection):
