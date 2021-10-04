@@ -1957,11 +1957,7 @@ class Data(object):
         try:
             if isinstance(data, Data):
                 if self.data is not None:
-                    self.data = np.concatenate((self.data, data.data), axis=1)
-                    if self.metadata is not None:
-                        self.metadata = np.concatenate((self.metadata, data.metadata), axis=1)
-                    if self.timestamps is not None:
-                        self.timestamps = np.concatenate((self.timestamps, data.timestamps), axis=1)
+                    self.data = np.concatenate((self.data, data.data), axis=2)
                 else:
                     self.data = data.data.copy()
                     self.metadata = data.metadata.copy()
