@@ -598,7 +598,7 @@ class EnsembleMeanCorrection(PostProcessor):
                     shape = parameters.shape
                     for i, j, k, l in product(range(shape[0]), range(shape[1]), range(shape[2]), range(shape[3])):
                         if interpolate_offset is not None:
-                            if isinstance(init_params[p], Data):
+                            if hasattr(init_params[p], 'data'):
                                 params = np.insert(parameters[i, j, k, l], 0, init_params[p][i, j, k, l, 0], axis=0)
                             else:
                                 params = np.insert(parameters[i, j, k, l], 0, init_params[p], axis=0)
