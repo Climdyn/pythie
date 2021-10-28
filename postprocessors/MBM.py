@@ -558,44 +558,30 @@ class EnsembleMeanCorrection(PostProcessor):
                 timedelta = np.array([datetime.timedelta(seconds=3600 * t) for t in td], dtype=object)
 
                 pp_time = np.concatenate((np.array([predictors.timestamps[0, 0][0] + proc_time_offset_delta]),
-                                            predictors.timestamps[0, 0][0] + proc_time_offset_delta + timedelta.cumsum()))
+                                          predictors.timestamps[0, 0][0] + proc_time_offset_delta + timedelta.cumsum()))
                 data_time = predictors.timestamps[0, 0][predictor_offset:]
-
-                combined_time = np.append(pp_time, data_time)
-                combined_time = np.unique(combined_time)
 
                 parameters_list_array = list()
                 for params in self.parameters_list:
                     shape = list(params.index_shape + params.shape)
-                    shape[4] = len(combined_time)
+                    shape[4] = len(data_time)
                     parameters_list_array.append(np.full(shape, np.nan))
 
-                k = 0
-                for i in range(len(combined_time)):
-                    if combined_time[i] in pp_time:
-                        for j in range(len(parameters_list_array)):
-                            parameters_list_array[j][:, :, :, :, i] = self.parameters_list[j][:, :, :, :, k]
-
-                        k += 1
-
-                for j in range(len(parameters_list_array)):
-                    parameters_list_array[j] = parameters_list_array[j][:, :, :, :, :len(data_time), ...]
-
-                combined_time = combined_time[:len(data_time)]
-
                 if interpolate_offset is not None:
-                    interp_time = np.insert(combined_time, 0, predictors.timestamps[0, 0][0] + interpolate_offset_delta)
-                    shift_index = 1
+                    interp_time = np.insert(pp_time, 0, predictors.timestamps[0, 0][0] + interpolate_offset_delta)
                 else:
-                    interp_time = combined_time.copy()
-                    shift_index = 0
+                    interp_time = pp_time.copy()
 
                 interp_time_timestamp = np.array(list(map(lambda x: x.timestamp(), interp_time)))
-                interp_time_timestamp = interp_time_timestamp - interp_time_timestamp[0]
+                interp_reference_time = interp_time_timestamp[0]
+                interp_time_timestamp = interp_time_timestamp - interp_reference_time
 
-                for p in range(len(parameters_list_array)):
-                    parameters = parameters_list_array[p]
-                    shape = parameters.shape
+                data_time_timestamp = np.array(list(map(lambda x: x.timestamp(), data_time)))
+                data_time_timestamp = data_time_timestamp - interp_reference_time
+
+                for p in range(len(self.parameters_list)):
+                    parameters = self.parameters_list[p]
+                    shape = parameters.index_shape
                     for i, j, k, l in product(range(shape[0]), range(shape[1]), range(shape[2]), range(shape[3])):
                         if interpolate_offset is not None:
                             if hasattr(init_params[p], 'data'):
@@ -603,23 +589,19 @@ class EnsembleMeanCorrection(PostProcessor):
                             else:
                                 params = np.insert(parameters[i, j, k, l], 0, init_params[p], axis=0)
                         else:
-                            params = parameters[i, j, k, l].copy()
+                            params = parameters[i, j, k, l]
                         if len(params.shape) == 1:
-                            mask = ~np.isnan(params)
-                            f = interp1d(interp_time_timestamp[mask], params[mask], kind='cubic')
-                            params[~mask] = f(interp_time_timestamp[~mask])
+                            f = interp1d(interp_time_timestamp, params, kind='cubic')
+                            parameters_list_array[p][i, j, k, l] = f(data_time_timestamp)
                         else:
                             for ni in range(params.shape[1]):
                                 for nj in range(params.shape[2]):
                                     par1d = params[:, ni, nj]
-                                    mask = ~np.isnan(par1d)
-                                    f = interp1d(interp_time_timestamp[mask], par1d[mask], kind='cubic')
-                                    par1d[~mask] = f(interp_time_timestamp[~mask])
-                                    params[:, ni, nj] = par1d
-                        parameters_list_array[p][i, j, k, l] = params[shift_index:]
+                                    f = interp1d(interp_time_timestamp, par1d, kind='cubic')
+                                    parameters_list_array[p][i, j, k, l][ni, nj] = f(data_time_timestamp)
 
                 parameters_list = list()
-                timedelta = np.diff(np.insert(combined_time, 0, predictors.timestamps[0, 0][0]))
+                timedelta = np.diff(np.insert(data_time, 0, predictors.timestamps[0, 0][0]))
                 ptime = map_times_to_int_array(timedelta.cumsum())
                 beta_parameters_time = np.empty((self.parameters_list[1].index_shape[0], 1), dtype=object)
                 parameters_time = np.empty((1, 1), dtype=object)
@@ -633,7 +615,7 @@ class EnsembleMeanCorrection(PostProcessor):
                     else:
                         parameters_list.append(Data(parameters, timestamps=parameters_time))
 
-                return parameters_list, pp_time, combined_time
+                return parameters_list, pp_time, data_time
 
         else:
             warnings.warn('Postprocessor is not trained. ' +
@@ -685,7 +667,7 @@ class EnsembleMeanCorrection(PostProcessor):
                 raw_param_kwargs = dict()
 
             parameters_list, ppt, t = self.get_interpolated_parameters(predictors, **proc_kwargs)
-            if timestamps:
+            if timestamps is False:
                 timestamps = t
                 pp_timestamps = ppt
             else:
@@ -705,20 +687,20 @@ class EnsembleMeanCorrection(PostProcessor):
                 return None
 
             for var in selected_var:
-                self.parameters_list[0].plot(variable=var, timestamps=timestamps, ax=ax, grid_point=grid_point, **raw_param_kwargs)
+                self.parameters_list[0].plot(variable=var, timestamps=pp_timestamps, ax=ax, grid_point=grid_point, **raw_param_kwargs)
                 leg.append(r'$\alpha_{'+str(var)+r'}$')
 
             for var in selected_var:
                 for p in range(self.parameters_list[1].index_shape[0]):
-                    self.parameters_list[1].plot(predictor=p, variable=var, timestamps=timestamps, ax=ax, grid_point=grid_point, **raw_param_kwargs)
+                    self.parameters_list[1].plot(predictor=p, variable=var, timestamps=pp_timestamps, ax=ax, grid_point=grid_point, **raw_param_kwargs)
                     leg.append(r'$\beta_{'+str(p)+r','+str(var)+'}$')
 
             for var in selected_var:
-                self.parameters_list[2].plot(variable=var, timestamps=timestamps, ax=ax, grid_point=grid_point, **raw_param_kwargs)
+                self.parameters_list[2].plot(variable=var, timestamps=pp_timestamps, ax=ax, grid_point=grid_point, **raw_param_kwargs)
                 leg.append(r'$\gamma_{1,' + str(var) + r'}$')
 
             for var in selected_var:
-                self.parameters_list[3].plot(variable=var, timestamps=timestamps, ax=ax, grid_point=grid_point, **raw_param_kwargs)
+                self.parameters_list[3].plot(variable=var, timestamps=pp_timestamps, ax=ax, grid_point=grid_point, **raw_param_kwargs)
                 leg.append(r'$\gamma_{2,' + str(var) + r'}$')
 
             colors = list()
@@ -727,18 +709,18 @@ class EnsembleMeanCorrection(PostProcessor):
             colors = iter(colors)
 
             for var in selected_var:
-                parameters_list[0].plot(variable=var, timestamps=pp_timestamps, ax=ax, grid_point=grid_point, color=colors.__next__(), **kwargs)
+                parameters_list[0].plot(variable=var, timestamps=timestamps, ax=ax, grid_point=grid_point, color=colors.__next__(), **kwargs)
 
             for var in selected_var:
                 for p in range(parameters_list[1].index_shape[0]):
-                    parameters_list[1].plot(predictor=p, variable=var, timestamps=pp_timestamps, ax=ax, grid_point=grid_point,
+                    parameters_list[1].plot(predictor=p, variable=var, timestamps=timestamps, ax=ax, grid_point=grid_point,
                                             color=colors.__next__(), **kwargs)
 
             for var in selected_var:
-                parameters_list[2].plot(variable=var, timestamps=pp_timestamps, ax=ax, grid_point=grid_point, color=colors.__next__(), **kwargs)
+                parameters_list[2].plot(variable=var, timestamps=timestamps, ax=ax, grid_point=grid_point, color=colors.__next__(), **kwargs)
 
             for var in selected_var:
-                parameters_list[3].plot(variable=var, timestamps=pp_timestamps, ax=ax, grid_point=grid_point, color=colors.__next__(), **kwargs)
+                parameters_list[3].plot(variable=var, timestamps=timestamps, ax=ax, grid_point=grid_point, color=colors.__next__(), **kwargs)
 
             for i in range(len(leg)):
                 leg.append(leg[i] + ' (interp1d)')
