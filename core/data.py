@@ -1371,23 +1371,20 @@ class Data(object):
             fig = plt.figure()
             ax = fig.gca()
 
-        if timestamps is None:
-            timestamps = self._get_timestamps(predictor)
-        elif not isinstance(timestamps, list):
-            timestamps = [timestamps] * self.number_of_observations
-
         em = self.observational_median
         std = np.sqrt(self.observational_var.data)
 
+        if timestamps is None:
+            timestamps = em._get_timestamps(predictor)
+            timestamps = timestamps[predictor, 0]
+
         if self._scalars:
-            for i in range(self.number_of_observations):
-                std_plot(timestamps[i], em[predictor, i, 0, variable, :], std[predictor, i, 0, variable, :], ax=ax, **kwargs)
+            std_plot(timestamps, em[predictor, 0, 0, variable, :], std[predictor, 0, 0, variable, :], ax=ax, **kwargs)
         elif self._fields:
             if ni is None or nj is None:
                 warnings.warn('You must specify which grid point to plot, cannot plot !', UserWarning)
                 return None
-            for i in range(self.number_of_observations):
-                std_plot(timestamps[i], em[predictor, i, 0, variable, :, ni, nj], std[predictor, i, 0, variable, :, ni, nj], ax=ax, **kwargs)
+            std_plot(timestamps, em[predictor, 0, 0, variable, :, ni, nj], std[predictor, 0, 0, variable, :, ni, nj], ax=ax, **kwargs)
 
         labels = ax.get_xticklabels()
         plt.setp(labels, rotation=30, horizontalalignment='center')
@@ -1445,32 +1442,29 @@ class Data(object):
             fig = plt.figure()
             ax = fig.gca()
 
-        if timestamps is None:
-            timestamps = self._get_timestamps(predictor)
-        elif not isinstance(timestamps, list):
-            timestamps = [timestamps] * self.number_of_observations
-
         qq = list()
         for qi in q:
             qq.append(1.-qi)
         low_quant = self.observational_quantiles(q, interpolation=low_interpolation)
         high_quant = self.observational_quantiles(qq, interpolation=high_interpolation)
 
+        if timestamps is None:
+            timestamps = low_quant._get_timestamps(predictor)
+            timestamps = timestamps[0]
+
         if self._scalars:
-            for i in range(self.number_of_observations):
-                for qi in range(len(q)):
-                    ax.fill_between(timestamps[i], low_quant[predictor, i, qi, variable, :],
-                                    high_quant[predictor, i, qi, variable, :],
-                                    alpha=alpha+q[qi], **kwargs)
+            for qi in range(len(q)):
+                ax.fill_between(timestamps, low_quant[predictor, 0, qi, variable, :],
+                                high_quant[predictor, 0, qi, variable, :],
+                                alpha=alpha+q[qi], **kwargs)
         elif self._fields:
             if ni is None or nj is None:
                 warnings.warn('You must specify which grid point to plot, cannot plot !', UserWarning)
                 return None
-            for i in range(self.number_of_observations):
-                for qi in range(len(q)):
-                    ax.fill_between(timestamps[i], low_quant[predictor, i, qi, variable, :, ni, nj],
-                                    high_quant[predictor, i, qi, variable, :, ni, nj],
-                                    alpha=alpha+q[qi], **kwargs)
+            for qi in range(len(q)):
+                ax.fill_between(timestamps, low_quant[predictor, 0, qi, variable, :, ni, nj],
+                                high_quant[predictor, 0, qi, variable, :, ni, nj],
+                                alpha=alpha+q[qi], **kwargs)
 
         return ax
 
@@ -1515,23 +1509,20 @@ class Data(object):
             fig = plt.figure()
             ax = fig.gca()
 
-        if timestamps is None:
-            timestamps = self._get_timestamps(predictor)
-        elif not isinstance(timestamps, list):
-            timestamps = [timestamps] * self.number_of_observations
-
         mini = self.observational_min
         maxi = self.observational_max
 
+        if timestamps is None:
+            timestamps = mini._get_timestamps(predictor)
+            timestamps = timestamps[0]
+
         if self._scalars:
-            for i in range(self.number_of_observations):
-                minmax_plot(timestamps[i], mini[predictor, i, 0, variable, :], maxi[predictor, i, 0, variable, :], ax=ax, **kwargs)
+            minmax_plot(timestamps, mini[predictor, 0, 0, variable, :], maxi[predictor, 0, 0, variable, :], ax=ax, **kwargs)
         elif self._fields:
             if ni is None or nj is None:
                 warnings.warn('You must specify which grid point to plot, cannot plot !', UserWarning)
                 return None
-            for i in range(self.number_of_observations):
-                minmax_plot(timestamps[i], mini[predictor, i, 0, variable, :], maxi[predictor, i, 0, variable, :, ni, nj], ax=ax, **kwargs)
+            minmax_plot(timestamps, mini[predictor, 0, 0, variable, :], maxi[predictor, 0, 0, variable, :, ni, nj], ax=ax, **kwargs)
 
         labels = ax.get_xticklabels()
         plt.setp(labels, rotation=30, horizontalalignment='center')
