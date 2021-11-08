@@ -598,7 +598,7 @@ class EnsembleMeanCorrection(PostProcessor):
                                 for nj in range(params.shape[2]):
                                     par1d = params[:, ni, nj]
                                     f = interp1d(interp_time_timestamp, par1d, kind='cubic')
-                                    parameters_list_array[p][i, j, k, l][ni, nj] = f(data_time_timestamp)
+                                    parameters_list_array[p][i, j, k, l, :, ni, nj] = f(data_time_timestamp)
 
                 parameters_list = list()
                 timedelta = np.diff(np.insert(data_time, 0, predictors.timestamps[0, 0][0]))
