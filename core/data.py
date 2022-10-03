@@ -149,7 +149,7 @@ class Data(object):
 
     data: ~numpy.ndarray
         The data array.
-    timestamps: (~numpy.ndarray(~numpy.ndarray(~datetime.datetime))
+    timestamps: ~numpy.ndarray(~datetime.datetime)
         The timestamps of the data, stored as :class:`~numpy.ndarray` of :class:`~datetime.datetime` and with shape corresponding to (:attr:`~.Data.number_of_predictors`, :attr:`~.Data.number_of_observations`).
     metadata: ~numpy.ndarray(object)
         Object describing the metadata of the data (not specified yet).

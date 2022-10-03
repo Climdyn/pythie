@@ -184,6 +184,9 @@ class EnsembleMeanCorrection(PostProcessor):
         elif observations.timestamps is not None:
             timestamps = observations.timestamps[0, 0]
         else:
+            timestamps = None
+
+        if timestamps is None:
             parameters_time = None
             return Data(alpha, timestamps=parameters_time), Data(beta, timestamps=parameters_time)
 
@@ -269,25 +272,33 @@ class EnsembleMeanCorrection(PostProcessor):
         if self.parameters_list:
             if predictors.timestamps is None:
                 return self._corrected_forecast(predictors)
-            else:
-                parameters_list, ppt, t = self.get_interpolated_parameters(predictors, predictor_offset,
-                                                                           proc_time_offset, interpolate_offset,
-                                                                           init_params)
-
-                if parameters_list is not None:
-
-                    data_time = predictors.timestamps.copy()
-                    for i in range(data_time.shape[0]):
-                        for j in range(data_time.shape[1]):
-                            data_time[i, j] = data_time[i, j][predictor_offset:]
-
-                    offset_predictors = predictors.copy()
-                    offset_predictors.data = offset_predictors.data[:, :, :, :, predictor_offset:, ...]
-                    offset_predictors.timestamps = data_time
-
-                    return self._corrected_forecast_mod(offset_predictors, parameters_list)
-                else:
+            elif isinstance(predictors.timestamps, np.ndarray):
+                if predictors.timestamps[0, 0] is None:
                     return self._corrected_forecast(predictors)
+                else:
+                    parameters_list, ppt, t = self.get_interpolated_parameters(predictors, predictor_offset,
+                                                                               proc_time_offset, interpolate_offset,
+                                                                               init_params)
+
+                    if parameters_list is not None:
+
+                        data_time = predictors.timestamps.copy()
+                        for i in range(data_time.shape[0]):
+                            for j in range(data_time.shape[1]):
+                                data_time[i, j] = data_time[i, j][predictor_offset:]
+
+                        offset_predictors = predictors.copy()
+                        offset_predictors.data = offset_predictors.data[:, :, :, :, predictor_offset:, ...]
+                        offset_predictors.timestamps = data_time
+
+                        return self._corrected_forecast_mod(offset_predictors, parameters_list)
+                    else:
+                        return self._corrected_forecast(predictors)
+            else:
+                warnings.warn('Postprocessor timestamps in a wrong format. ' +
+                              'Impossible to postprocess the predictors.', UserWarning)
+                return None
+
         else:
             warnings.warn('Postprocessor is not trained. ' +
                           'Impossible to postprocess the predictors.', UserWarning)
@@ -827,6 +838,9 @@ class BiasCorrection(EnsembleMeanCorrection):
         elif observations.timestamps is not None:
             timestamps = observations.timestamps[0, 0]
         else:
+            timestamps = None
+
+        if timestamps is None:
             parameters_time = None
             return Data(alpha, timestamps=parameters_time)
 
