@@ -3,6 +3,7 @@ Pythie
 ======
 
 [![Documentation Status](https://readthedocs.org/projects/pythie/badge/?version=latest)](https://pythie.readthedocs.io/en/latest/?badge=latest)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7233538.svg)](https://doi.org/10.5281/zenodo.7233538)
 
 General Information
 -------------------
