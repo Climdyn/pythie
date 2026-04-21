@@ -1867,6 +1867,158 @@ class EnsembleNgrCRPSCorrection(EnsembleAbsCRPSCorrection):
         crps = corrected.Ngr_CRPS(observations)
         return np.squeeze(crps.data)
 
+class NoBiasEnsembleSpreadScalingAbsCRPSCorrection(EnsembleSpreadScalingAbsCRPSCorrection):
+    """A postprocessor to correct the ensemble mean and scale the spread of the ensemble, but with no bias correction being applied.
+    Useful to postprocess rainfall for example.
+    Correct according to the formula:
+
+    .. math::
+
+        \\mathcal{D}^C_{n,m,v} (t) = \\alpha_{v} (t) + \\sum_{p=1}^P \\beta_{p,v} (t) \\, \\mu^{\\rm ens}_{p,n,v} (t) + \\tau_{v} (t) \\bar{\\mathcal{D}}^{\\rm ens}_{0,n,m,v} (t)
+
+    The parameters :math:`\\beta_{v} (t)` and :math:`\\tau_{v} (t)` are optimized at each lead time to minimize
+    the absolute norm CRPS (:meth:`~.Data.Abs_CRPS`) of :math:`\\mathcal{D}^C_{n,m,v} (t)` with the observations :math:`\\mathcal{O}`.
+    The parameters :math:`\\alpha_{v} (t)` are equal to zero for any :math:`t`.
+    This postprocessor must thus be trained with a training set composed of past ensembles :math:`\\mathcal{D}_{p,n,m,v}` and observations :math:`\\mathcal{O}`.
+    If needed, the parameters initial conditions for the minimization are constructed using the values given by the :class:`EnsembleSpreadScalingCorrection`, dependding on
+    the minimizer and options being chosen.
+
+    Attributes
+    ----------
+    parameters_list: list(Data)
+        The list of training parameters :math:`\\alpha_{v} (t)`, :math:`\\beta_{n,v} (t)`, :math:`\\tau_{v} (t)`, as :class:`.Data` objects.
+        This list is empty until the first :meth:`~.BiasCorrection.train` method call.
+
+    Examples
+    --------
+
+    .. plot::
+        :format: doctest
+        :include-source: 1
+
+        >>> from pp_test.test_data import test_sin
+        >>> import postprocessors.MBM as MBM
+        >>> import matplotlib.pyplot as plt
+        >>>
+        >>> # Loading random sinusoidal observations and reforecasts
+        >>> past_observations, reforecasts = test_sin(60., 3., number_of_observation=200)
+        >>> past_observations.index_shape
+        (1, 200, 1, 1, 21)
+        >>> reforecasts.index_shape
+        (1, 200, 10, 1, 21)
+        >>>
+        >>> # Training the postprocessor
+        >>> postprocessor = MBM.NoBiasEnsembleSpreadScalingAbsCRPSCorrection()
+        >>> postprocessor.train(past_observations, reforecasts, ntrial=10)
+        >>>
+        >>> # Loading new random sinusoidal observations and forecasts
+        >>> observations, forecasts = test_sin(60., 3.)
+        >>> corrected_forecasts = postprocessor(forecasts)  # Correcting the new forecasts
+        >>>
+        >>> # Plotting the forecasts
+        >>> ax = observations.plot(global_label='observations', color='tab:green')
+        >>> ax = forecasts.plot(ax=ax, global_label='raw forecasts', mfc=None, mec='tab:blue',
+        ... ls='', marker='o', ms=3.0)
+        >>> ax = corrected_forecasts.plot(ax=ax, global_label='corrected forecasts', mfc=None,
+        ... mec='tab:orange', ls='', marker='o', ms=3.0)
+        >>> t = ax.set_ylabel('temperature [C°]')
+        >>> t = ax.set_xlabel('date')
+        >>> t = ax.legend()
+        >>> t = ax.set_title('Example of corrected forecasts')
+        >>>
+        >>> # Plotting the postprocessing parameters
+        >>> ax = postprocessor.plot_parameters()
+        >>> t = ax.set_title('Postprocessing parameters \\n'+r'($\\gamma_{1,0}$ is $\\tau_{0}$)')
+        >>>
+        >>> # Computing the CRPS score
+        >>> raw_crps = forecasts.CRPS(observations)
+        >>> corrected_crps = corrected_forecasts.CRPS(observations)
+        >>>
+        >>> # Plotting the CRPS score
+        >>> ax = raw_crps.plot(timestamps=postprocessor.parameters_list[0].timestamps[0, 0],
+        ... global_label='Raw forecast CRPS', color='tab:blue')
+        >>> ax = corrected_crps.plot(timestamps=postprocessor.parameters_list[0].timestamps[0, 0], ax=ax,
+        ... global_label='Corrected forecast CRPS', color='tab:orange')
+        >>> t = ax.set_ylabel('CRPS [C°]')
+        >>> t = ax.set_xlabel('time [hour]')
+        >>> t = ax.set_title('CRPS score')
+        >>> t = ax.legend()
+        >>> plt.show()
+
+    """
+
+    def __init__(self):
+
+        EnsembleSpreadScalingAbsCRPSCorrection.__init__(self)
+        self.min_result = None
+
+    @staticmethod
+    def _atomic_corrected_forecast(params, predictors):
+        cem = predictors.centered_ensemble.data[0]
+        res = np.sum((params[:-1] * predictors.ensemble_mean.data.T).T, axis=0)[np.newaxis, ...]
+        res = res + (params[-1]) * cem[np.newaxis, ...]
+        return Data(res, metadata=False, timestamps=False, dtype=predictors.dtype)
+
+    @staticmethod
+    def _atomic_crps(params, observations, predictors):
+        corrected = NoBiasEnsembleSpreadScalingAbsCRPSCorrection._atomic_corrected_forecast(params, predictors)
+        crps = corrected.Abs_CRPS(observations)
+        return np.squeeze(crps.data)
+
+
+    @staticmethod
+    def _minimize_atom(minimize_func, observations_atom, predictors_atom, params, kwargs):
+
+        if 'method' not in kwargs.keys():
+            method = 'Nelder-Mead'
+        else:
+            method = kwargs['method']
+
+        if method not in ['differential_evolution', 'shgo', 'dual_annealing', 'basinhopping']:
+            optimizer = optimize.minimize
+            opt_kwargs = kwargs
+        else:
+            optimizer = getattr(optimize, method)
+            opt_kwargs = dict(kwargs)
+            opt_kwargs.pop('method')
+
+        res = optimizer(minimize_func, params[1:], args=(observations_atom, predictors_atom), **opt_kwargs)
+        res.x = np.concatenate((params[0][np.newaxis], res.x))
+
+        return res
+
+    def train(self, observations, predictors, forecast_init_time=None, num_threads=None, ntrial=1, **kwargs):
+        """Method to train the postprocessor with an observation and predictors training set. Once trained, the postprocessor parameters
+        are stored in the :attr:`~.BiasCorrection.parameter_list`.
+
+        Parameters
+        ----------
+        observations: Data
+            A `Data` object containing the observation training set.
+        predictors: Data
+            A `Data` object containing the predictors training set. Must be broadcastable with the `observations`.
+        forecast_init_time: int or ~datetime.datetime, optional
+            The time at which the predictors generation begin (the (re)forecasts initial time). If None, assume that this time is zero (00Z).
+        num_threads: None or int, optional
+            The number of threads used to compute the parameters. One thread computes a chunk of the given grid points and lead times.
+            If `None`, uses the maximum number of cpu cores available.
+            Default to `None`.
+        ntrial: int
+            Number of parameters initial conditions to try to find the best solution. Not used if the minimizer being chosen is a global one.
+            Default to 1.
+        kwargs: dict
+            Dictionary of options to pass to the :func:`scipy.optimize.minimize` function.
+        """
+
+        obs, pred = self._sanitize_data(observations, predictors)
+
+        alpha, beta, gamma_1 = EnsembleSpreadScalingCorrection._compute_ss_coefficients(obs, pred, forecast_init_time)
+
+        self.parameters_list = [alpha.zeros_like(), beta, gamma_1, alpha.zeros_like()]
+
+        self._minimize(obs, pred, num_threads=num_threads, ntrial=ntrial, **kwargs)
+
+
 
 def _compute(ls):
     return ls[0], ls[1](*ls[2])
