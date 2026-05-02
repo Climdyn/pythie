@@ -2020,7 +2020,6 @@ class NoBiasEnsembleSpreadScalingAbsCRPSCorrection(EnsembleSpreadScalingAbsCRPSC
         obs, pred = self._sanitize_data(observations, predictors)
 
         alpha, beta, gamma_1 = EnsembleSpreadScalingCorrection._compute_ss_coefficients(obs, pred, forecast_init_time)
-        gamma_1.data = np.abs(gamma_1.data)
 
         self.parameters_list = [alpha.zeros_like(), beta.full_like(1.), gamma_1, alpha.zeros_like()]
 
