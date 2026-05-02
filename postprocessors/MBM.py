@@ -1961,9 +1961,9 @@ class NoBiasEnsembleSpreadScalingAbsCRPSCorrection(EnsembleSpreadScalingAbsCRPSC
     @staticmethod
     def _atomic_corrected_forecast(params, predictors):
         cem = predictors.centered_ensemble.data[0]
-        res = np.sum((np.full_like(params, 1., dtype=predictors.dtype)  # [np.newaxis, ...]
+        res = np.sum((np.full_like(params[-1], 1., dtype=predictors.dtype)  # [np.newaxis, ...]
                       * predictors.ensemble_mean.data.T).T, axis=0)[np.newaxis, ...]
-        res = res + params * cem[np.newaxis, ...]
+        res = res + params[-1] * cem[np.newaxis, ...]
         return Data(res, metadata=False, timestamps=False, dtype=predictors.dtype)
 
     @staticmethod
@@ -1989,8 +1989,9 @@ class NoBiasEnsembleSpreadScalingAbsCRPSCorrection(EnsembleSpreadScalingAbsCRPSC
             opt_kwargs = dict(kwargs)
             opt_kwargs.pop('method')
 
-        res = optimizer(minimize_func, params[-1], args=(observations_atom, predictors_atom), **opt_kwargs)
-        res.x = np.concatenate((params[0][np.newaxis], params[1:-1], res.x[np.newaxis]))
+        res = optimizer(minimize_func, params[1:], args=(observations_atom, predictors_atom), **opt_kwargs)
+        res.x = np.concatenate((params[0][np.newaxis], res.x))
+        res.x[1:-1] = np.full_like(params[-1], 1., dtype=predictors_atom.dtype)
 
         return res
 
