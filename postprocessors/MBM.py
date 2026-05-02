@@ -170,7 +170,13 @@ class EnsembleMeanCorrection(PostProcessor):
         sigma_v = np.moveaxis(sigma_v, [0, 1], [-2, -1])
         sigma_ov = predictors.ensemble_mean_observational_covariance(observations)
         sigma_ov = np.moveaxis(sigma_ov, [0, 1], [-2, -1])
+        upscale = False
+        if sigma_v.dtype == np.float16:
+            sigma_v = sigma_v.astype(np.float32)
+            upscale = True
         beta = sigma_ov @ np.linalg.inv(sigma_v)
+        if upscale:
+            beta = beta.astype(np.float16)
         beta = np.moveaxis(beta, -1, 0)
         index_shape = list(predictors.index_shape)
         index_shape[1] = index_shape[2] = 1
@@ -2013,6 +2019,8 @@ class NoBiasEnsembleSpreadScalingAbsCRPSCorrection(EnsembleSpreadScalingAbsCRPSC
         obs, pred = self._sanitize_data(observations, predictors)
 
         alpha, beta, gamma_1 = EnsembleSpreadScalingCorrection._compute_ss_coefficients(obs, pred, forecast_init_time)
+        beta.data = np.abs(beta.data)
+        gamma_1.data = np.abs(gamma_1.data)
 
         self.parameters_list = [alpha.zeros_like(), beta, gamma_1, alpha.zeros_like()]
 
