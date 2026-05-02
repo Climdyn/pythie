@@ -1961,8 +1961,9 @@ class NoBiasEnsembleSpreadScalingAbsCRPSCorrection(EnsembleSpreadScalingAbsCRPSC
     @staticmethod
     def _atomic_corrected_forecast(params, predictors):
         cem = predictors.centered_ensemble.data[0]
-        res = np.sum((params[:-1] * predictors.ensemble_mean.data.T).T, axis=0)[np.newaxis, ...]
-        res = res + (params[-1]) * cem[np.newaxis, ...]
+        res = np.sum((np.full_like(params, 1., dtype=predictors.dtype)  # [np.newaxis, ...]
+                      * predictors.ensemble_mean.data.T).T, axis=0)[np.newaxis, ...]
+        res = res + params * cem[np.newaxis, ...]
         return Data(res, metadata=False, timestamps=False, dtype=predictors.dtype)
 
     @staticmethod
@@ -1988,8 +1989,8 @@ class NoBiasEnsembleSpreadScalingAbsCRPSCorrection(EnsembleSpreadScalingAbsCRPSC
             opt_kwargs = dict(kwargs)
             opt_kwargs.pop('method')
 
-        res = optimizer(minimize_func, params[1:], args=(observations_atom, predictors_atom), **opt_kwargs)
-        res.x = np.concatenate((params[0][np.newaxis], res.x))
+        res = optimizer(minimize_func, params[-1], args=(observations_atom, predictors_atom), **opt_kwargs)
+        res.x = np.concatenate((params[0][np.newaxis], params[1:-1], res.x[np.newaxis]))
 
         return res
 
@@ -2019,10 +2020,9 @@ class NoBiasEnsembleSpreadScalingAbsCRPSCorrection(EnsembleSpreadScalingAbsCRPSC
         obs, pred = self._sanitize_data(observations, predictors)
 
         alpha, beta, gamma_1 = EnsembleSpreadScalingCorrection._compute_ss_coefficients(obs, pred, forecast_init_time)
-        beta.data = np.abs(beta.data)
         gamma_1.data = np.abs(gamma_1.data)
 
-        self.parameters_list = [alpha.zeros_like(), beta, gamma_1, alpha.zeros_like()]
+        self.parameters_list = [alpha.zeros_like(), beta.full_like(1.), gamma_1, alpha.zeros_like()]
 
         self._minimize(obs, pred, num_threads=num_threads, ntrial=ntrial, **kwargs)
 
